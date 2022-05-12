@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+    - "54325:5432"
+    networks:
+      - db
+  django:
+    build:
+      context: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+    - .:/app
+    ports:
+    - "8500:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - db
+      - redis
+    networks:
+      proxynetwork:
+        aliases:
+            - auth
+      db:
+      app:
+
+  redis:
+    image: "redis:alpine"
+
+  celery:
+    build:
+      context: .
+    command: celery -A OAuth worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - django
+
+networks:
+  proxynetwork:
+    external: true
+  db: {}
+  app: {}

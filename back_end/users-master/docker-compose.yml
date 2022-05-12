@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+    - "54323:5432"
+    networks:
+      - db
+  django:
+    build:
+      context: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+    - .:/app
+    ports:
+    - "8300:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    depends_on:
+      - db
+    networks:
+      proxynetwork:
+        aliases:
+          - user
+      db:
+      app:
+
+
+networks:
+  proxynetwork:
+    external: true
+  db: { }
+  app: { }
+
