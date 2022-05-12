@@ -1,0 +1,6 @@
+framework module Pods_GetSmarter {
+  umbrella header "Pods-GetSmarter-umbrella.h"
+
+  export *
+  module * { export * }
+}
